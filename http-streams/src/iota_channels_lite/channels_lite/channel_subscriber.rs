@@ -44,7 +44,7 @@ impl Channel {
 
         Self {
             subscriber: subscriber,
-            is_connected: false,
+            is_connected: true,
             send_opt: node.send_options(),
             client: iota_client::Client::new(node.as_string()),
             announcement_link: Address::from_str(&channel_address, &announcement_tag).unwrap(),
@@ -56,7 +56,7 @@ impl Channel {
     ///
     /// Connect
     ///
-    pub fn connect(&mut self) -> Fallible<String> {
+    pub fn connect(&mut self, masked: bool) -> Fallible<String> {
         let message_list = self
             .client
             .recv_messages_with_options(&self.announcement_link, ())?;
@@ -71,19 +71,23 @@ impl Channel {
                 break;
             }
         }
-        if found_valid_msg {
-            let subscribe_link = {
-                let msg = self.subscriber.subscribe(&self.announcement_link)?;
-                self.client.send_message_with_options(&msg, self.send_opt)?;
-                msg.link.clone()
-            };
+        if masked {
+            if found_valid_msg {
+                let subscribe_link = {
+                    let msg = self.subscriber.subscribe(&self.announcement_link)?;
+                    self.client.send_message_with_options(&msg, self.send_opt)?;
+                    msg.link.clone()
+                };
 
-            self.subscription_link = subscribe_link;
-            self.is_connected = true;
+                self.subscription_link = subscribe_link;
+                self.is_connected = true;
+            } else {
+                println!("No valid announce message found");
+            }
+            Ok(self.subscription_link.msgid.to_string())
         } else {
-            println!("No valid announce message found");
+            Ok("Connected in public mode".to_string())
         }
-        Ok(self.subscription_link.msgid.to_string())
     }
 
     ///

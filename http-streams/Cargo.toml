@@ -1,5 +1,5 @@
 [package]
-name = "rustmon"
+name = "xdk2streams"
 version = "0.1.0"
 authors = ["AleBuser <alebuser.98@gmail.com>"]
 edition = "2018"

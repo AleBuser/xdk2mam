@@ -40,7 +40,12 @@ async fn main() -> std::io::Result<()> {
             .data(tag_store.clone())
             .service(web::resource("/status").route(web::get().to(handlers::status)))
             .service(
-                web::resource("/get_announcement").route(web::get().to(handlers::get_announcement)),
+                web::resource("/get_announcement")
+                    .route(web::get().to(handlers::get_announcement))
+                    .guard(guard::fn_guard(|req| {
+                        req.headers().contains_key("x-api-key")
+                    }))
+                    .to(|| HttpResponse::MethodNotAllowed()),
             )
             .service(web::resource("/get_tags").route(web::get().to(handlers::get_tags)))
             .service(
@@ -54,6 +59,14 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/sensor_data_masked")
                     .route(web::post().to(handlers::sensor_data_masked))
+                    .guard(guard::fn_guard(|req| {
+                        req.headers().contains_key("x-api-key")
+                    }))
+                    .to(|| HttpResponse::MethodNotAllowed()),
+            )
+            .service(
+                web::resource("/add_subscriber")
+                    .route(web::put().to(handlers::add_subscriber))
                     .guard(guard::fn_guard(|req| {
                         req.headers().contains_key("x-api-key")
                     }))

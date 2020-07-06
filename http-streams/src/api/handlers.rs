@@ -1,4 +1,5 @@
 use crate::is_valid;
+use crate::responses::response_message::ResponseMessage;
 use crate::security::keystore::KeyManager;
 use crate::types::sensor_data::SensorData;
 use crate::AnnouncementInfo;
@@ -46,6 +47,44 @@ pub async fn get_tags(tag_lists: web::Data<Arc<Mutex<TagLists>>>) -> Result<Http
     Ok(HttpResponse::Ok().json(tag_lists.clone()))
 }
 
+pub async fn add_subscriber(
+    data: Option<String>,
+    req: HttpRequest,
+    store: web::Data<KeyManager>,
+    channel: web::Data<Arc<Mutex<ChannelState>>>,
+) -> Result<HttpResponse, Error> {
+    let hash = store.keystore.api_key_author.clone();
+    if is_valid(
+        req.headers().get("x-api-key").unwrap().to_str().unwrap(),
+        hash.clone(),
+    ) {
+        println!(
+            "PUT /add_subscriber -- {:?} -- authorized request",
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs()
+        );
+        match data {
+            Some(data) => {
+                let mut channel = channel.lock().unwrap();
+                println!("{}", data);
+                match channel.channel.add_subscriber(data) {
+                    Ok(keyload) => {
+                        println!("Streams response: {:?}", keyload.clone());
+
+                        Ok(HttpResponse::Ok().json(ResponseMessage { message: keyload }))
+                    }
+                    Err(e) => Ok(HttpResponse::Ok().json(format!("{}", e))),
+                }
+            }
+            None => Ok(HttpResponse::Ok().json(format!("No thing!"))),
+        }
+    } else {
+        Ok(HttpResponse::Unauthorized().json("Unauthorized"))
+    }
+}
+
 pub async fn sensor_data_public(
     data: Option<String>,
     req: HttpRequest,
@@ -69,7 +108,7 @@ pub async fn sensor_data_public(
             Some(data) => {
                 let json_data: serde_json::Result<SensorData> = serde_json::from_str(&data);
                 match json_data {
-                    Ok(data) => {
+                    Ok(data_ser) => {
                         let mut channel = channel.lock().unwrap();
                         match channel.channel.write_signed(
                             false,
@@ -125,7 +164,7 @@ pub async fn sensor_data_masked(
             Some(data) => {
                 let json_data: serde_json::Result<SensorData> = serde_json::from_str(&data);
                 match json_data {
-                    Ok(data) => {
+                    Ok(data_ser) => {
                         let mut channel = channel.lock().unwrap();
 
                         if channel.channel.can_send_masked() {

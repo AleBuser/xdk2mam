@@ -1,5 +1,6 @@
 pub mod api;
 pub mod iota_channels_lite;
+pub mod responses;
 pub mod security;
 pub mod types;
 use serde_derive::Deserialize;

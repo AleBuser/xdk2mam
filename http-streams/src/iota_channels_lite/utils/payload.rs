@@ -169,4 +169,3 @@ pub mod json {
     ///
     pub type PayloadBuilder = super::PayloadBuilder<JsonSerializer>;
 }
-
