@@ -30,7 +30,6 @@ async fn main() -> std::io::Result<()> {
     let tag_store = Arc::new(Mutex::new(TagLists {
         signed_public: vec![],
         signed_masked: vec![],
-        tagged: vec![],
     }));
 
     HttpServer::new(move || {
@@ -43,9 +42,18 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/get_announcement").route(web::get().to(handlers::get_announcement)),
             )
+            .service(web::resource("/get_tags").route(web::get().to(handlers::get_tags)))
             .service(
-                web::resource("/sensor_data")
-                    .route(web::post().to(handlers::sensor_data))
+                web::resource("/sensor_data_public")
+                    .route(web::post().to(handlers::sensor_data_public))
+                    .guard(guard::fn_guard(|req| {
+                        req.headers().contains_key("x-api-key")
+                    }))
+                    .to(|| HttpResponse::MethodNotAllowed()),
+            )
+            .service(
+                web::resource("/sensor_data_masked")
+                    .route(web::post().to(handlers::sensor_data_masked))
                     .guard(guard::fn_guard(|req| {
                         req.headers().contains_key("x-api-key")
                     }))

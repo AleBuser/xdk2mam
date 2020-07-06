@@ -198,4 +198,11 @@ impl Channel {
         }
         return Ok(None);
     }
+
+    ///
+    /// Returns wether the Author can send a masked message
+    ///
+    pub fn can_send_masked(&mut self) -> bool {
+        self.keyload_tag != String::default()
+    }
 }

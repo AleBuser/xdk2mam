@@ -36,7 +36,7 @@ impl Network {
     pub fn as_string(&self) -> &'static str {
         match self {
             Self::Custom(url, _) => url,
-            Self::Main => "https://iotanode.us:14267",
+            Self::Main => "https://stirrlink.dyndns.org:14267",
             Self::Comnet => "https://nodes.comnet.thetangle.org:443",
             Self::Devnet => "https://nodes.devnet.iota.org:443",
         }
