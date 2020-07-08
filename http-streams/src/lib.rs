@@ -2,6 +2,7 @@ pub mod api;
 pub mod iota_channels_lite;
 pub mod responses;
 pub mod security;
+pub mod stream_server;
 pub mod types;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;

@@ -1,7 +1,7 @@
 //!
 //! Channel author
 //!
-use super::Network;
+//use super::Network;
 use crate::iota_channels_lite::utils::{
     payload::PacketPayload, random_seed, response_write_signed::ResponseSigned,
 };
@@ -34,7 +34,7 @@ impl Channel {
     ///
     /// Initialize the Channel
     ///
-    pub fn new(node: Network, seed_option: Option<String>) -> Channel {
+    pub fn new(node: String, mwm: usize, local_pow: bool, seed_option: Option<String>) -> Channel {
         let seed = match seed_option {
             Some(seed) => seed,
             None => random_seed::new(),
@@ -44,10 +44,14 @@ impl Channel {
 
         let channel_address = author.channel_address().to_string();
 
+        let mut send_opt = SendTrytesOptions::default();
+        send_opt.min_weight_magnitude = mwm;
+        send_opt.local_pow = local_pow;
+
         Self {
             author: author,
-            client: iota_client::Client::new(node.as_string()),
-            send_opt: node.send_options(),
+            client: iota_client::Client::new(Box::leak(node.into_boxed_str())),
+            send_opt: send_opt,
             channel_address: channel_address,
             announcement_link: Address::default(),
             keyload_tag: String::default(),

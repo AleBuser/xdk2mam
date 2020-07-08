@@ -133,7 +133,7 @@ impl Channel {
                                 Payload::unwrap_data(&unwrapped_masked)?,
                             ));
                         }
-                        Err(e) => println!("Signed Packet Error: {}", e),
+                        Err(_e) => (), //println!("Signed Packet Error: {}", e),
                     }
                 }
             }

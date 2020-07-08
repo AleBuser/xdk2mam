@@ -6,7 +6,7 @@ use std::fs::File;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Keystore {
-    pub api_key_subscribers: Vec<String>,
+    pub api_key_subscriber: String,
     pub api_key_author: String,
 }
 
@@ -16,30 +16,35 @@ pub struct KeyManager {
 }
 
 impl KeyManager {
-    pub fn new(new_key_aut: String, new_key_subscriber: Vec<String>) -> KeyManager {
-        KeyManager {
-            keystore: Keystore {
-                api_key_subscribers: new_key_subscriber,
-                api_key_author: new_key_aut,
-            },
-        }
+    pub fn new(new_key_aut: String, new_key_subscriber: String) -> KeyManager {
+        let keystore = Keystore {
+            api_key_author: calculate_hash(new_key_aut),
+            api_key_subscriber: calculate_hash(new_key_subscriber),
+        };
+
+        store_keystore(&keystore);
+
+        KeyManager { keystore: keystore }
     }
 
     pub fn restore() -> KeyManager {
-        let rec: Keystore = serde_json::from_reader(File::open("keystore.json").unwrap()).unwrap();
+        let rec: Keystore =
+            serde_json::from_reader(File::open("src/security/keystore.json").unwrap()).unwrap();
         KeyManager { keystore: rec }
     }
 
     pub fn add_subscriber(&mut self, new_key_subscriber: String) -> () {
-        self.keystore
-            .api_key_subscribers
-            .push(calculate_hash(new_key_subscriber));
+        self.keystore.api_key_subscriber = calculate_hash(new_key_subscriber);
         store_keystore(&self.keystore)
     }
 }
 
-pub fn store_keystore(k: &Keystore) -> () {
-    serde_json::to_writer(&File::create("keystore.json").unwrap(), k).unwrap();
+pub fn store_keystore(keystore: &Keystore) -> () {
+    serde_json::to_writer(
+        &File::create("src/security/keystore.json").unwrap(),
+        keystore,
+    )
+    .unwrap();
 }
 
 pub fn calculate_hash(t: String) -> String {

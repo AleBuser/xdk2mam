@@ -19,7 +19,7 @@ async fn get_announcement(api_key: String) -> Result<(String, String)> {
     let client = reqwest::Client::new();
 
     let body = &client
-        .get("http://localhost:8081/get_announcement")
+        .get("http://localhost:8080/get_announcement")
         .header("x-api-key", api_key.clone())
         .send()
         .await
@@ -52,7 +52,7 @@ impl Subscriber {
         let client = reqwest::Client::new();
 
         let body = &client
-            .get("http://localhost:8081/get_tags")
+            .get("http://localhost:8080/get_tags")
             .header("x-api-key", self.api_key.clone())
             .send()
             .await
@@ -62,23 +62,24 @@ impl Subscriber {
             .unwrap()
             .clone();
 
-        let ret: Value = serde_json::from_str(body).unwrap();
-
         let mut tag_list: Vec<(String, Option<String>)> = vec![];
-        let list = {
-            if !masked {
-                ret["signed_public"].as_array().unwrap().clone()
-            } else {
-                ret["signed_masked"].as_array().unwrap().clone()
-            }
-        };
-        for t in &list {
-            let signed_message_tag = t["signed_message_tag"].as_str().unwrap().to_string();
-            let change_key_tag = match t["change_key_tag"].as_str() {
-                Some(key) => Some(key.to_string()),
-                None => None,
+        if body != "" {
+            let ret: Value = serde_json::from_str(body).unwrap();
+            let list = {
+                if !masked {
+                    ret["signed_public"].as_array().unwrap().clone()
+                } else {
+                    ret["signed_masked"].as_array().unwrap().clone()
+                }
             };
-            tag_list.push((signed_message_tag, change_key_tag));
+            for t in &list {
+                let signed_message_tag = t["signed_message_tag"].as_str().unwrap().to_string();
+                let change_key_tag = match t["change_key_tag"].as_str() {
+                    Some(key) => Some(key.to_string()),
+                    None => None,
+                };
+                tag_list.push((signed_message_tag, change_key_tag));
+            }
         }
         Ok(tag_list)
     }
@@ -86,11 +87,11 @@ impl Subscriber {
     async fn share_subscription(&mut self, tag: String) -> Result<String> {
         let client = reqwest::Client::new();
 
-        let url_par = "http://localhost:8081/add_subscriber".to_owned();
+        let url_par = "http://localhost:8080/add_subscriber".to_owned();
 
         let response = &client
             .put(Url::parse(&url_par).unwrap())
-            .header("x-api-key", "API_AUT")
+            .header("x-api-key", self.api_key.clone())
             .header("Content-Type", "text/plain")
             .body(Body::from(tag))
             .send()
@@ -101,9 +102,6 @@ impl Subscriber {
             .unwrap()
             .clone();
 
-        println!("connection: OK");
-
-        println!("{:?}", response);
         let ret: Value = serde_json::from_str(response).unwrap();
 
         let tag = ret["message"].as_str().unwrap().to_string();
@@ -158,16 +156,15 @@ impl Subscriber {
 }
 #[tokio::main]
 async fn main() {
-    let mut sub = Subscriber::new("API_AUT".to_string(), None).await;
+    let mut sub = Subscriber::new("SUBKEY".to_string(), None).await;
 
     let subscription_tag: String = sub.channel_subscriber.connect(true).unwrap();
-
-    println!("{}", subscription_tag);
+    println!("Connection to channel established successfully! \n Subscribing...");
 
     thread::sleep(time::Duration::from_secs(10));
-    println!("Started");
 
     sub.share_subscription(subscription_tag).await.unwrap();
+    println!("Subscription to channel completed! \n Reading messages...");
 
     let mut previous_public = String::default();
     let mut previous_masked = String::default();
