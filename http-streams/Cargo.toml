@@ -1,7 +1,7 @@
 [package]
 name = "xdk2streams"
 version = "0.1.0"
-authors = ["AleBuser <alebuser.98@gmail.com>"]
+authors = ["AleBuser <4l3bu53r@gmail.com>"]
 edition = "2018"
 
 [lib]
@@ -25,11 +25,9 @@ tokio-core = "0.1.17"
 tokio = {version = "0.2.18", features = ["macros"]}
 futures = "0.3.1"
 chrono = { version = "0.4.10", features = ["serde"] }
-dotenv = "0.15.0"
 actix-service = "1.0.1"
 actix-rt = "1.0.0"
 actix-web = "2.0.0"
-actix-web-httpauth = { git = "https://github.com/actix/actix-web-httpauth" }
 actix-cors = "0.2.0"
 base64 = "^0.12"
 rust-crypto = "0.2.36"

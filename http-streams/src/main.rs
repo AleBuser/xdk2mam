@@ -7,8 +7,6 @@ use std::{env, fs::File};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    env::set_var("RUST_LOG", "actix_web=debug");
-    dotenv::dotenv().ok();
 
     let args: Vec<String> = env::args().collect();
 
