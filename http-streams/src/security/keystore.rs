@@ -1,5 +1,5 @@
 use crypto::digest::Digest;
-use crypto::sha1::Sha1;
+use crypto::sha3::Sha3;
 use serde::{Deserialize, Serialize};
 
 use std::fs::File;
@@ -48,7 +48,7 @@ pub fn store_keystore(keystore: &Keystore) -> () {
 }
 
 pub fn calculate_hash(t: String) -> String {
-    let mut hasher = Sha1::new();
+    let mut hasher = Sha3::sha3_256();
     hasher.input_str(&t);
     let hex = hasher.result_str();
     hex

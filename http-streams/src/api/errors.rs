@@ -9,8 +9,8 @@ pub enum ServiceError {
     #[display(fmt = "BadRequest: {}", _0)]
     BadRequest(String),
 
-    #[display(fmt = "Unauthorised")]
-    Unauthorised,
+    #[display(fmt = "Unauthorized")]
+    Unauthorized,
 }
 
 // impl ResponseError trait allows to convert our errors into http responses with appropriate data
@@ -21,7 +21,7 @@ impl ResponseError for ServiceError {
                 HttpResponse::InternalServerError().json("Internal Server Error, Please try later")
             }
             ServiceError::BadRequest(ref message) => HttpResponse::BadRequest().json(message),
-            ServiceError::Unauthorised => HttpResponse::Unauthorized().json("Unauthorised"),
+            ServiceError::Unauthorized => HttpResponse::Unauthorized().json("Unauthorized"),
         }
     }
 }

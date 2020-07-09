@@ -39,7 +39,7 @@ impl Channel {
             Some(seed) => seed,
             None => random_seed::new(),
         };
-        let mss_height = 3_u32;
+        let mss_height = 2_u32;
         let author = Author::new(&seed, mss_height as usize, true);
 
         let channel_address = author.channel_address().to_string();
