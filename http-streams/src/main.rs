@@ -1,4 +1,4 @@
-use local::iota_channels_lite::channels_lite::channel_author::Channel;
+use channels_lite::channels_lite::channel_author::Channel;
 use local::security::keystore::KeyManager;
 use local::stream_server;
 use local::types::config::Config;
@@ -7,7 +7,6 @@ use std::{env, fs::File};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-
     let args: Vec<String> = env::args().collect();
 
     let author_key = &args[1];

@@ -12,8 +12,8 @@ path = "src/lib.rs"
 
 [dependencies]
 failure = "0.1.7"
+channels_lite = {path = "src/iota_channels_lite", version = "^0"}
 iota-streams = { git = "https://github.com/iotaledger/streams.git" }
-iota-lib-rs = "0.4.1"
 iota-conversion = "0.5.1"
 handlebars = "3.1.0"
 serde = {version="1.0.110", features = ["derive"] }

@@ -5,6 +5,6 @@ use serde_derive::Serialize;
 pub struct Config {
     pub endpoint: String,
     pub node: String,
-    pub mwm: usize,
+    pub mwm: u8,
     pub local_pow: bool,
 }

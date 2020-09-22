@@ -1,5 +1,5 @@
-use local::iota_channels_lite::channels_lite::channel_subscriber::Channel;
-use local::iota_channels_lite::channels_lite::Network;
+use channels_lite::channels_lite::channel_subscriber::Channel;
+use channels_lite::channels_lite::Network;
 use local::types::sensor_data::SensorData;
 
 use reqwest;
@@ -48,7 +48,7 @@ impl Subscriber {
         }
     }
 
-    async fn get_tags(&mut self, masked: bool) -> Result<Vec<(String, Option<String>)>> {
+    async fn get_tags(&mut self, masked: bool) -> Result<Vec<String>> {
         let client = reqwest::Client::new();
 
         let body = &client
@@ -62,7 +62,7 @@ impl Subscriber {
             .unwrap()
             .clone();
 
-        let mut tag_list: Vec<(String, Option<String>)> = vec![];
+        let mut tag_list: Vec<String> = vec![];
         if body != "" {
             let ret: Value = serde_json::from_str(body).unwrap();
             let list = {
@@ -74,11 +74,7 @@ impl Subscriber {
             };
             for t in &list {
                 let signed_message_tag = t["signed_message_tag"].as_str().unwrap().to_string();
-                let change_key_tag = match t["change_key_tag"].as_str() {
-                    Some(key) => Some(key.to_string()),
-                    None => None,
-                };
-                tag_list.push((signed_message_tag, change_key_tag));
+                tag_list.push(signed_message_tag);
             }
         }
         Ok(tag_list)
@@ -113,14 +109,14 @@ impl Subscriber {
     }
 
     async fn read_all_public(&mut self) -> Result<Vec<String>> {
-        let tag_list: Vec<(String, Option<String>)> = self.get_tags(false).await.unwrap();
+        let tag_list: Vec<String> = self.get_tags(false).await.unwrap();
 
         let mut msg_list: Vec<String> = vec![];
 
-        for (signed_message_tag, change_key_tag) in tag_list {
+        for signed_message_tag in tag_list {
             let msgs: Vec<(Option<String>, Option<String>)> = self
                 .channel_subscriber
-                .read_signed(signed_message_tag, change_key_tag)
+                .read_signed(signed_message_tag)
                 .unwrap();
             for (msg_p, _msg_m) in msgs {
                 match msg_p {
@@ -134,14 +130,14 @@ impl Subscriber {
     }
 
     async fn read_all_masked(&mut self) -> Result<Vec<String>> {
-        let tag_list: Vec<(String, Option<String>)> = self.get_tags(true).await.unwrap();
+        let tag_list: Vec<String> = self.get_tags(true).await.unwrap();
 
         let mut msg_list: Vec<String> = vec![];
 
-        for (signed_message_tag, change_key_tag) in tag_list {
+        for signed_message_tag in tag_list {
             let msgs = self
                 .channel_subscriber
-                .read_signed(signed_message_tag, change_key_tag)
+                .read_signed(signed_message_tag)
                 .unwrap();
             for (_msg_p, msg_m) in msgs {
                 match msg_m {
@@ -156,7 +152,7 @@ impl Subscriber {
 }
 #[tokio::main]
 async fn main() {
-    let mut sub = Subscriber::new("SUBKEY".to_string(), None).await;
+    let mut sub = Subscriber::new("SUB_KEY".to_string(), None).await;
 
     let subscription_tag: String = sub.channel_subscriber.connect(true).unwrap();
     println!("Connection to channel established successfully! \n Subscribing...");
@@ -169,7 +165,7 @@ async fn main() {
     let public_list = sub.read_all_public().await.unwrap();
     let masked_list = sub.read_all_masked().await.unwrap();
 
-    for data in &public_list{
+    for data in &public_list {
         let data: SensorData = serde_json::de::from_str(data).unwrap();
         println!("{:?}", data);
     }

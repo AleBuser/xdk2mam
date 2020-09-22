@@ -12,4 +12,6 @@
 #![cfg_attr(not(debug_assertions), deny(warnings))]
 
 pub mod channels_lite;
+pub use channels_lite as channels;
+
 pub mod utils;

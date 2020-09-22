@@ -4,7 +4,7 @@ use crate::api::handlers;
 
 use crate::security::keystore::KeyManager;
 
-use crate::iota_channels_lite::channels_lite::channel_author::Channel;
+use channels_lite::channels_lite::channel_author::Channel;
 
 use crate::ChannelState;
 use crate::TagLists;
